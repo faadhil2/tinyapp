@@ -12,11 +12,17 @@ const urlDatabase = {
 };
 
 function generateRandomString() {
-
+return Math.random().toString(36).substr(2,6);
 }
 
 app.get("/", (req, res) => {
   res.send("Hello!");
+});
+
+app.get("/u/:shortURL", (req, res) => {
+  // const longURL = ...
+  const temp = req.params.shortURL
+  res.redirect(urlDatabase[temp]);
 });
 
 app.get("/urls", (req, res) => {
@@ -25,14 +31,17 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  //console.log(req.body);  // Log the POST request body to the console
+  const temp = req.body.longURL;
+  const ranShortURL = generateRandomString();
+  urlDatabase.ranShortURL = temp;
+
+  res.redirect(`/urls/:${ranShortURL}`)
 });
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
-
 
 app.get("/urls/:shortURL", (req, res) => {
   const temp = req.params.shortURL
