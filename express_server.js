@@ -62,7 +62,7 @@ app.post("/register", (req, res) => {
     return res.send("Error: Status Code 400")
   }
   users[newID] = {id: newID, email: userEmail, password: userPassword};
-  //console.log(users)
+
   res.cookie('user_id', newID);
   res.redirect("/urls")
 });
@@ -75,25 +75,32 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   const userEmail = req.body.email ;
-  //res.cookie('username', user);
-  for( let key in users){
-    if (users[key].email === userEmail){
-      res.cookie('user_id', users[key].id);
-      res.redirect("/urls")
-    }
+  const userPassword = req.body.password;
+
+  const userID = emailFinder(userEmail, users);
+
+  if (userID && users[userID].password === userPassword){
+    res.cookie('user_id', userID);
+    res.redirect("/urls")
   }
-  res.send("Wrong Credentials")
+  
+  // res.cookie('username', user);
+  // for( let key in users){
+  //   if (users[key].email === userEmail){
+  //     res.cookie('user_id', users[key].id);
+  //     res.redirect("/urls")
+  //   }
+  // }
+  res.send("Error: Status Code 403") // Wrong Credentials
   res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
-  //res.clearCookie("username")
   res.clearCookie("user_id")
   res.redirect("/urls")
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  // const longURL = ...
   const temp = req.params.shortURL
   res.redirect(urlDatabase[temp]);
 });
@@ -104,7 +111,6 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body);  // Log the POST request body to the console
   const temp = req.body.longURL;
   const ranShortURL = generateRandomString();
   urlDatabase[ranShortURL] = temp;
