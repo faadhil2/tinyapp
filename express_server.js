@@ -24,6 +24,16 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.get("/register", (req, res) => {
+  const templateVars = {urls: urlDatabase, username: req.cookies['username'] || ''};
+  res.render("urls_register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+  
+  //res.redirect("/urls")
+});
+
 app.post("/login", (req, res) => {
   const user = req.body.username ;
   res.cookie('username', user);
