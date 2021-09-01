@@ -55,10 +55,11 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   const temp = req.body.id
-  const temp2 = req.body.shortURL
+  const temp2 = req.params.id
   console.log(temp)
   console.log(temp2)
   
+  urlDatabase[temp2] = temp;
   
   res.redirect("/urls")
 });
@@ -77,6 +78,10 @@ app.get("/urls.json", (req, res) => {
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
+});
+
+app.get("*", (req, res) => {
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
