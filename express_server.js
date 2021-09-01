@@ -67,6 +67,12 @@ app.post("/register", (req, res) => {
   res.redirect("/urls")
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
+  //const templateVars = {urls: urlDatabase, username: req.cookies['username'] || '', user : users[req.cookies['user_id']]};
+  res.render("urls_login", templateVars);
+});
+
 app.post("/login", (req, res) => {
   const userEmail = req.body.email ;
   //res.cookie('username', user);
