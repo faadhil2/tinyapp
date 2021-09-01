@@ -31,6 +31,14 @@ function generateRandomString() {
 return Math.random().toString(36).substr(2,6);
 }
 
+const emailFinder = function(email, users){
+  for (let key in users){
+    if (users[key].email === email){
+      return users[key].id; 
+    }
+  }
+  return false;
+}
 
 app.use(cookieParser())
 
@@ -42,7 +50,6 @@ app.get("/", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
   //const templateVars = {urls: urlDatabase, username: req.cookies['username'] || '', user : users[req.cookies['user_id']]};
-  console.log(templateVars.user)
   res.render("urls_register", templateVars);
 });
 
@@ -51,11 +58,11 @@ app.post("/register", (req, res) => {
   const userPassword = req.body.password;
   const newID = generateRandomString();
 
-  if (!userEmail || !userPassword){
-    res.send("Error: Status Code 400")
+  if (!userEmail || !userPassword || emailFinder(userEmail, users)){
+    return res.send("Error: Status Code 400")
   }
-
   users[newID] = {id: newID, email: userEmail, password: userPassword};
+  //console.log(users)
   res.cookie('user_id', newID);
   res.redirect("/urls")
 });
