@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
+const bcrypt = require('bcrypt');
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
@@ -83,7 +84,8 @@ app.post("/register", (req, res) => {
   if (!userEmail || !userPassword || emailFinder(userEmail, users)){
     return res.send("Error: Status Code 400")
   }
-  users[newID] = {id: newID, email: userEmail, password: userPassword};
+  // users[newID] = {id: newID, email: userEmail, password: userPassword};
+  users[newID] = {id: newID, email: userEmail, password: bcrypt.hashSync(userPassword,10)};
 
   res.cookie('user_id', newID);
   res.redirect("/urls")
@@ -101,9 +103,10 @@ app.post("/login", (req, res) => {
 
   const userID = emailFinder(userEmail, users);
 
-  if (userID && users[userID].password === userPassword){
+  // if (userID && users[userID].password === userPassword){
+    if (userID && bcrypt.compareSync(userPassword, users[userID].password)){
     res.cookie('user_id', userID);
-    res.redirect("/urls")
+    return res.redirect("/urls")
   }
   
   // res.cookie('username', user);
@@ -114,7 +117,7 @@ app.post("/login", (req, res) => {
   //   }
   // }
   res.send("Error: Status Code 403") // Wrong Credentials
-  res.redirect("/urls")
+  //res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
