@@ -2,6 +2,7 @@ const express = require("express");
 const cookieSession = require('cookie-session')
 const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt');
+const getUserByEmail = require('./helpers')
 const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
@@ -52,14 +53,14 @@ function generateRandomString() {
 return Math.random().toString(36).substr(2,6);
 }
 
-const emailFinder = function(email, users){
-  for (let key in users){
-    if (users[key].email === email){
-      return users[key].id; 
-    }
-  }
-  return false;
-}
+// const getUserByEmail = function(email, users){
+//   for (let key in users){
+//     if (users[key].email === email){
+//       return users[key].id; 
+//     }
+//   }
+//   return false;
+// }
 
 const urlsForUser = function (id){
   let urlList = {};
@@ -89,7 +90,7 @@ app.post("/register", (req, res) => {
   const userPassword = req.body.password;
   const newID = generateRandomString();
 
-  if (!userEmail || !userPassword || emailFinder(userEmail, users)){
+  if (!userEmail || !userPassword || getUserByEmail(userEmail, users)){
     return res.send("Error: Status Code 400")
   }
   // users[newID] = {id: newID, email: userEmail, password: userPassword};
@@ -111,7 +112,7 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email ;
   const userPassword = req.body.password;
 
-  const userID = emailFinder(userEmail, users);
+  const userID = getUserByEmail(userEmail, users);
 
   // if (userID && users[userID].password === userPassword){
     if (userID && bcrypt.compareSync(userPassword, users[userID].password)){
