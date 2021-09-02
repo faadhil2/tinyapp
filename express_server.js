@@ -75,7 +75,11 @@ const urlsForUser = function (id){
 
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id){
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login")
+  }
 });
 
 app.get("/register", (req, res) => {
@@ -140,16 +144,20 @@ app.post("/logout", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const temp = req.params.shortURL
-  res.redirect(urlDatabase[temp]);
+  res.redirect(urlDatabase[temp].longURL);
 });
 
 app.get("/urls", (req, res) => {
+  if (req.session.user_id){
   const userUrls = urlsForUser(req.session.user_id)
   //const userUrls = urlsForUser(req.cookies['user_id'])
   
   // const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
   const templateVars = {urls: userUrls, user : users[req.session.user_id]};
   res.render("urls_index", templateVars);
+  } else {
+    res.send("Error: you need to be logged in")
+  }
 });
 
 app.post("/urls", (req, res) => {
