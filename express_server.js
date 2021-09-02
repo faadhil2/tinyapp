@@ -51,6 +51,17 @@ const emailFinder = function(email, users){
   return false;
 }
 
+const urlsForUser = function (id){
+  let urlList = {};
+
+  for (let key in urlDatabase){
+    if (urlDatabase[key].userID === id){
+      urlList[key] = {longURL: urlDatabase[key].longURL}
+    }
+  }
+  return urlList;
+}
+
 app.use(cookieParser())
 
 
@@ -117,7 +128,10 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
+  const userUrls = urlsForUser(req.cookies['user_id'])
+  
+  // const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
+  const templateVars = {urls: userUrls, user : users[req.cookies['user_id']]};
   res.render("urls_index", templateVars);
 });
 
