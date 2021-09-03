@@ -9,17 +9,6 @@ const getUserByEmail = function(email, users){
   return false;
 }
 
-// const urlsForUser = function (id){
-//   let urlList = {};
-
-//   for (let key in urlDatabase){
-//     if (urlDatabase[key].userID === id){
-//       urlList[key] = {longURL: urlDatabase[key].longURL}
-//     }
-//   }
-//   return urlList;
-// }
-
 function generateRandomString() {
   return Math.random().toString(36).substr(2,6);
   }

@@ -1,38 +1,35 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark bg-success">
     <a class="navbar-brand" href="/">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-      </div>  
+      </div>
     </div>
     <div>
-    <% if (!user) { %>
-      <!-- <form class="nav-item nav-link" method="POST" action="/login">
-      <label for="username">Username:</label>
-      <input type="text" name="email" placeholder="John Smith" style="width: 300px; margin: 1em">
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form> -->
-    <div style = "float:left">
-    <form class="nav-item nav-link" method="GET" action="/login">
-    <button type="submit" class="btn btn-primary">Login</button>
-    </form> 
-    </div>
-    <div style = "float:right; padding-left: 10px">
-    <form class="nav-item nav-link" method="GET" action="/register">
-      <button type="submit" class="btn btn-primary">Register</button>
-      </form> 
-    </div>
-    <% } else { %>
-      <form class="nav-item nav-link" method="POST" action="/logout">
-        <label for="email">Logged in As: <%= user.email %></label>
-        <button type="submit" class="btn btn-primary">Logout</button>
-      </form>
-      <%} %>
+      <% if (!user) { %>
+
+        <div style="float:left">
+          <form class="nav-item nav-link" method="GET" action="/login">
+            <button type="submit" class="btn btn-primary">Login</button>
+          </form>
+        </div>
+        <div style="float:right; padding-left: 10px">
+          <form class="nav-item nav-link" method="GET" action="/register">
+            <button type="submit" class="btn btn-primary">Register</button>
+          </form>
+        </div>
+        <% } else { %>
+          <form class="nav-item nav-link" method="POST" action="/logout">
+            <label for="email">Logged in As: <%= user.email %></label>
+            <button type="submit" class="btn btn-primary">Logout</button>
+          </form>
+          <%} %>
     </div>
   </nav>
 </header>
