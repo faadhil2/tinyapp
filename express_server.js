@@ -2,7 +2,7 @@ const express = require("express");
 const cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 const { getUserByEmail, generateRandomString } = require('./helpers')
-const app = express();
+const app = express(); //Create express
 const PORT = 8080; // default port 8080
 const flash = require('connect-flash');
 const bodyParser = require("body-parser");
@@ -10,29 +10,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set("view engine", "ejs");
 
-
+// Holds the shortUrl Objects {longurl:, userID:}
 const urlDatabase = {
-  // b6UTxQ: {
+  // example: {
   //     longURL: "https://www.tsn.ca",
   //     userID: "aJ48lW"
-  // },
-  // i3BoGr: {
-  //     longURL: "https://www.google.ca",
-  //     userID: "aJ48lW"
-  // }
 };
 
+// users object holds the user objects
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  },
   sfsdfds: {
     id: "sfsdfds",
     email: "test@test.com",
@@ -40,21 +26,23 @@ const users = {
   }
 }
 
+// Create a cookie session and encryption
 app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
 
-  maxAge: 12 * 60 * 60 * 1000 // 12 hours
+  maxAge: 12 * 60 * 60 * 1000 // 12 hours until expiration
 }))
 
 app.use(flash());
 
+//Create an error alert for error processes
 app.use((req, res, next) => {
   res.locals.error = req.flash("error");
   next();
 });
 
-
+// Function to help with finding the urls belonging to a userID
 const urlsForUser = function (id) {
   let urlList = {};
 
@@ -66,6 +54,7 @@ const urlsForUser = function (id) {
   return urlList;
 }
 
+// -------------------HANDLE REQUESTS : GET AND POST---------------------------------
 
 app.get("/", (req, res) => {
   if (req.session.user_id) {
@@ -232,6 +221,9 @@ app.get("*", (req, res) => {
   res.redirect("/urls");
 });
 
+// ---------------------------------------------------------------------------
+
+// Listening
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
