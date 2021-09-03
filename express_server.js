@@ -1,10 +1,11 @@
 const express = require("express");
 const cookieSession = require('cookie-session')
-const cookieParser = require('cookie-parser')
+//const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt');
-const getUserByEmail = require('./helpers')
+const {getUserByEmail, generateRandomString} = require('./helpers')
 const app = express();
 const PORT = 8080; // default port 8080
+const flash = require('connect-flash');
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -36,6 +37,11 @@ const users = {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
+  },
+  sfsdfds: {
+    id: "sfsdfds",
+    email: "test@test.com",
+    password: "$2b$10$A6Yxw.d3plrttllCza/w9Oq.5aYIZn0pxEUhvpIuGWc4vbQmv/M1W" //admin
   }
 }
 
@@ -43,24 +49,18 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2'],
 
-  // Cookie Options
-  //maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  maxAge: 12 * 60 * 60 * 1000 // 12 hours
 }))
 
-app.use(cookieParser())
+app.use(flash());
 
-function generateRandomString() {
-return Math.random().toString(36).substr(2,6);
-}
+app.use((req, res, next) => {
+  res.locals.error = req.flash("error");
+  next();
+});
 
-// const getUserByEmail = function(email, users){
-//   for (let key in users){
-//     if (users[key].email === email){
-//       return users[key].id; 
-//     }
-//   }
-//   return false;
-// }
+
+
 
 const urlsForUser = function (id){
   let urlList = {};
@@ -76,13 +76,17 @@ const urlsForUser = function (id){
 
 app.get("/", (req, res) => {
   if (req.session.user_id){
-    res.redirect("/urls");
-  } else {
-    res.redirect("/login")
+    return res.redirect("/urls");
   }
+    return res.redirect("/login")
+  
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id){
+    return res.redirect("/");
+  }
+
   const templateVars = {urls: urlDatabase, user : users[req.session.user_id]};
   //const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
   //const templateVars = {urls: urlDatabase, username: req.cookies['username'] || '', user : users[req.cookies['user_id']]};
@@ -95,7 +99,9 @@ app.post("/register", (req, res) => {
   const newID = generateRandomString();
 
   if (!userEmail || !userPassword || getUserByEmail(userEmail, users)){
-    return res.send("Error: Status Code 400")
+    req.flash("error", "Invalid email and/or password" )
+    return res.redirect("/register")
+    return res.send("Error: Status Code 400") // Email already exists
   }
   // users[newID] = {id: newID, email: userEmail, password: userPassword};
   users[newID] = {id: newID, email: userEmail, password: bcrypt.hashSync(userPassword,10)};
@@ -106,6 +112,9 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  if (req.session.user_id){
+    return res.redirect("/");
+  }
   const templateVars = {urls: urlDatabase, user : users[req.session.user_id]};
   //const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
   //const templateVars = {urls: urlDatabase, username: req.cookies['username'] || '', user : users[req.cookies['user_id']]};
@@ -132,14 +141,16 @@ app.post("/login", (req, res) => {
   //     res.redirect("/urls")
   //   }
   // }
-  res.send("Error: Status Code 403") // Wrong Credentials
+  req.flash("error", "Wrong Credentials" )
+  res.redirect("/login")
+  //res.send("Error: Status Code 403") // Wrong Credentials
   //res.redirect("/urls")
 });
 
 app.post("/logout", (req, res) => {
   //res.clearCookie("user_id")
   req.session.user_id = null
-  res.redirect("/urls")
+  res.redirect("/")
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -154,9 +165,11 @@ app.get("/urls", (req, res) => {
   
   // const templateVars = {urls: urlDatabase, user : users[req.cookies['user_id']]};
   const templateVars = {urls: userUrls, user : users[req.session.user_id]};
-  res.render("urls_index", templateVars);
+  return res.render("urls_index", templateVars);
   } else {
-    res.send("Error: you need to be logged in")
+    req.flash("error", "You need to be logged in");
+    return res.redirect("/login");
+    //res.send("Error: you need to be logged in")
   }
 });
 
@@ -172,7 +185,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[ranShortURL] = {longURL: temp, userID: req.session.user_id};
   //console.log(urlDatabase)
   
-  res.redirect(`/urls/:${ranShortURL}`)
+  res.redirect(`/urls/${ranShortURL}`)
 });
 
 app.get("/urls/new", (req, res) => {
@@ -190,6 +203,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let temp = req.params.shortURL
   let idExists = false;
+  if (req.session.user_id === urlDatabase[temp].userID){
   if (temp.charAt(0) === ':'){
     temp = req.params.shortURL.substring(1);
   }
@@ -199,13 +213,18 @@ app.get("/urls/:shortURL", (req, res) => {
     }
   }
   if (idExists === false){
-    return res.send("ShortURL does not exist")
+    req.flash("error", "ShortURL does not exist")
+    return res.redirect("/urls")
+    //return res.send("ShortURL does not exist")
   }
-
+  
   const temp2 = urlDatabase[temp].longURL
   // const templateVars = { shortURL: temp, longURL: temp2, user : users[req.cookies['user_id']]};
   const templateVars = { shortURL: temp, longURL: temp2, user : users[req.session.user_id]};
   res.render("urls_show", templateVars);
+}
+  req.flash("error", "Page Not Found")
+  return res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
@@ -218,7 +237,7 @@ app.post("/urls/:id", (req, res) => {
   
   res.redirect("/urls")
   } else{
-    res.redirect("/login")
+    res.redirect("/")
   }
 });
 
@@ -250,3 +269,5 @@ app.get("*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+module.exports = urlDatabase;
